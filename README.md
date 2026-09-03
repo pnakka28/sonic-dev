@@ -146,6 +146,22 @@ sonic-dev/
 
 Each directory carries its own README with the detail.
 
+## PR review agent
+
+`recodeAgent/agents/sonic-pr-reviewer.agent.md` is a read-only Copilot CLI agent
+with repository-specific context for the testbed, emulator bridge, black-box
+oracle, translation pipeline, and benchmarks. Install the version-controlled
+profiles and run it from the repository root:
+
+```bash
+bash recodeAgent/tools/install_agents.sh
+copilot -p "Review the current branch against main" \
+  --agent sonic-pr-reviewer --reasoning-effort high --allow-all
+```
+
+The command intentionally remains interactive so the reviewer can ask for a base
+branch, lab evidence, or a related submodule PR when that context is required.
+
 ## How the pieces fit
 
 **The emulator replaces hardware.** `platform/` implements the SONiC platform API over

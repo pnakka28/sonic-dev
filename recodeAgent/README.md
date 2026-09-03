@@ -325,7 +325,8 @@ dev/recodeAgent/
 ├── agents/                       # Copilot CLI custom-agent profiles (§4a)
 │   ├── analyzer.agent.md  scoper.agent.md  planner.agent.md
 │   ├── translator.agent.md  validator.agent.md  parity_verifier.agent.md
-│   └── benchmarker.agent.md  optimizer.agent.md          # optimize phase only
+│   ├── benchmarker.agent.md  optimizer.agent.md          # optimize phase only
+│   └── sonic-pr-reviewer.agent.md                        # standalone PR review
 ├── tools/
 │   ├── validate_on_dut.sh        # build ▶ inject ▶ run.sh ▶ results.xml ▶ restore
 │   ├── build_check.sh            # compile-only check (no inject/tests)
@@ -383,6 +384,7 @@ before every run, honouring `COPILOT_HOME`).
 | **parity_verifier** | *(ours)* | source + `pipeline/crate/` → `parity_report.json` | Per-module source-vs-Rust completeness check once all milestones pass. Read-only. |
 | **benchmarker** | *(ours)* | runs `benchmark/bench.sh` → `bench.json` | Measures only — **no edit tool**, deliberately (§6). |
 | **optimizer** | *(ours)* | `bench.json` + `optimize_history.json` → edits `pipeline/crate/` | One small focused change set per round; must leave `unit_test.sh` green. |
+| **sonic-pr-reviewer** | *(standalone)* | PR diff + repository/upstream context → review findings | Read-only, repository-wide review across the testbed, bridge, emulator, black-box oracle, translation pipeline, and benchmarks. Asks focused questions when a base, submodule change, lab result, or external contract is missing. |
 
 `tools` are scoped per role and all omit the `agent` alias, so an agent cannot
 delegate to another — the Burr graph is the only sequencer. The orchestrator runs
@@ -587,6 +589,15 @@ single agent by hand:
 copilot -p "Analyze source/xcvrd and write pipeline/analysis.md" \
   --agent analyzer --model claude-opus-4.8 --reasoning-effort high \
   --allow-all --no-ask-user --add-dir ../xcvrd-tests
+```
+
+The repository-wide reviewer is standalone (it is not a Burr pipeline stage).
+Run it from the repository root without `--no-ask-user` so it can request missing
+cross-repository or lab context:
+
+```bash
+copilot -p "Review the current branch against main" \
+  --agent sonic-pr-reviewer --reasoning-effort high --allow-all
 ```
 
 ### Grading against the real sonic-mgmt suites
